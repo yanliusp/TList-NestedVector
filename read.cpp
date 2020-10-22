@@ -72,7 +72,7 @@ vector<vector<vector<double>>> TList2NestedVector(const TList* aTList)
 TList* NestedVector2TList(const vector<vector<vector<double>>>& tempVectorlv2, const string& aHistoName, const double xscale) {
   //Note we do not check for zero length here because sometime these vectors are zero on purpose
 
-  TList* aTListlv1 = new TList();
+  TList* aTListlv1[tempVectorlv2.size()]; // = new TList();
   //TList * li = new TList();
   //TList *aTListlv1ptr = &aTListlv1;
   TList *aTListlv2 = new TList();
@@ -90,6 +90,7 @@ TList* NestedVector2TList(const vector<vector<vector<double>>>& tempVectorlv2, c
   while (count != tempVectorlv2.size()) {
   //while (count != 1) {
     cout << "count "<< count << endl;
+    aTListlv1[count] = new TList();
     while (counta != tempVectorlv2[0].size()) {
     //while (counta != 1) {
       histname = aHistoName + to_string(count) + to_string(counta);
@@ -100,14 +101,14 @@ TList* NestedVector2TList(const vector<vector<vector<double>>>& tempVectorlv2, c
       //sleep(10);
       //aHistptr->Draw();
       //aHist.Draw();
-      aTListlv1->Add(aHistptr);
+      aTListlv1[count]->Add(aHistptr);
       counta++;
       cout << "counta "<< counta << endl;
     }
-    aTListlv2->Add(aTListlv1);
-    aTListlv1->Print();
+    aTListlv2->Add(aTListlv1[count]);
+    aTListlv1[count]->Print();
     //aTListlv1->Clear();
-    aTListlv1->Print();
+    //aTListlv1->Print();
     counta = 0;
     count++;
   }
@@ -158,6 +159,13 @@ void read() {
 */
   //testing NestedVector2TList
   TList* aa = NestedVector2TList(vec, "hist", 0.1);
+
+  vector<vector<vector<double>>> vec_back = TList2NestedVector(aa);
+  for (int xxxx=0; xxxx<vec.size(); xxxx++) {
+  for (int xxx=0; xxx<vec[0].size(); xxx++) {
+  for (int xx=0; xx<vec[0][0].size(); xx++) {
+    cout<< xx << "  " << vec[1][0][xx] <<"  " << vec_back[1][0][xx] << "  "  << endl; }}}
+
   //TH1D * histoutput = NestedVector2TList(vec, "hist", 0.1);
   //histoutput.Draw();
   TFile * savefile = new TFile("saveFile.root", "RECREATE");
