@@ -17,7 +17,7 @@ vector<double> TH1D2Vector(TH1D* aHisto)
 
 }
 
-TH1D Vector2TH1D(const vector<double>& aVector, const string& aHistoName,
+TH1D* Vector2TH1D(const vector<double>& aVector, const string& aHistoName,
                              const double xscale)
 {
    //Note we do not check for zero length here because sometime these vectors are zero on purpose
@@ -26,13 +26,13 @@ TH1D Vector2TH1D(const vector<double>& aVector, const string& aHistoName,
 
    //now initialize a histogram, x axis is bins
    string histName = Form("%s", aHistoName.c_str());
-   TH1D tempHistogram(histName.c_str(), histName.c_str(), nBins, 0, ((double)nBins)*xscale);
+   TH1D* tempHistogram = new TH1D(histName.c_str(), histName.c_str(), nBins, 0, ((double)nBins)*xscale);
 
    //now fill the histogram with the values in each bin of the vector
    //remembering that bins start at 1 in ROOT
    for(int binCtr=1; binCtr<=nBins; binCtr++)
    {
-      tempHistogram.SetBinContent(binCtr, aVector[binCtr-1]);
+      tempHistogram->SetBinContent(binCtr, aVector[binCtr-1]);
       //cout << binCtr << "  " << aVector[binCtr-1] << endl;
    }
 
@@ -69,33 +69,35 @@ vector<vector<vector<double>>> TList2NestedVector(const TList* aTList)
 }
 
 //Oct 17: 
-TList* NestedVector2TList(const vector<vector<vector<double>>>& tempVectorlv2, 
-//TH1D* NestedVector2TList(const vector<vector<vector<double>>>& tempVectorlv2, 
-                         const string& aHistoName, const double xscale) {
+TList* NestedVector2TList(const vector<vector<vector<double>>>& tempVectorlv2, const string& aHistoName, const double xscale) {
   //Note we do not check for zero length here because sometime these vectors are zero on purpose
 
   TList* aTListlv1 = new TList();
   //TList * li = new TList();
   //TList *aTListlv1ptr = &aTListlv1;
   TList *aTListlv2 = new TList();
-  TList aTListlv2aa;
-  aTListlv2 = &aTListlv2aa;
-  TH1D aHist;
+  //TList aTListlv2aa;
+  //aTListlv2 = &aTListlv2aa;
+  //TH1D aHist;
   TH1D* aHistptr;
-  aHistptr = &aHist;
+  //aHistptr = &aHist;
   int count = 0;
   int counta = 0;
+  string histname;
   
   cout << "count "<< count << endl;
-  cout << tempVectorlv2.size() << endl;
-  //while (count != tempVectorlv2.size()) {
-  while (count != 1) {
+  cout << "tempVectorlv2.size() " << tempVectorlv2.size() << endl;
+  while (count != tempVectorlv2.size()) {
+  //while (count != 1) {
     cout << "count "<< count << endl;
-    //while (counta != tempVectorlv2[0].size()) {
-    while (counta != 1) {
-      aHist = Vector2TH1D(tempVectorlv2[count][counta], aHistoName, xscale);
+    while (counta != tempVectorlv2[0].size()) {
+    //while (counta != 1) {
+      histname = aHistoName + to_string(count) + to_string(counta);
+      aHistptr = Vector2TH1D(tempVectorlv2[count][counta], histname, xscale);
       cout << aHistptr->GetName() << endl;
       cout << aHistptr->GetBinContent(11) << endl;
+      aHistptr->Draw();
+      //sleep(10);
       //aHistptr->Draw();
       //aHist.Draw();
       aTListlv1->Add(aHistptr);
@@ -103,7 +105,10 @@ TList* NestedVector2TList(const vector<vector<vector<double>>>& tempVectorlv2,
       cout << "counta "<< counta << endl;
     }
     aTListlv2->Add(aTListlv1);
-    aTListlv1->Clear();
+    aTListlv1->Print();
+    //aTListlv1->Clear();
+    aTListlv1->Print();
+    counta = 0;
     count++;
   }
   
@@ -158,7 +163,8 @@ void read() {
   TFile * savefile = new TFile("saveFile.root", "RECREATE");
   //if (histoutput) histoutput->Draw();
   cout << "Can I get here?" << endl;
-  //aa->Print();
+  aa->Print();
+  aa->Write("aa", 1);
   //histoutput->Draw();
   savefile->Close();
 
