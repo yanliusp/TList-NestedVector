@@ -33,7 +33,7 @@ TH1D Vector2TH1D(const vector<double>& aVector, const string& aHistoName,
    for(int binCtr=1; binCtr<=nBins; binCtr++)
    {
       tempHistogram.SetBinContent(binCtr, aVector[binCtr-1]);
-      cout << aVector[binCtr-1] << endl;
+      //cout << binCtr << "  " << aVector[binCtr-1] << endl;
    }
 
    return tempHistogram;
@@ -70,23 +70,34 @@ vector<vector<vector<double>>> TList2NestedVector(const TList* aTList)
 
 //Oct 17: 
 TList* NestedVector2TList(const vector<vector<vector<double>>>& tempVectorlv2, 
+//TH1D* NestedVector2TList(const vector<vector<vector<double>>>& tempVectorlv2, 
                          const string& aHistoName, const double xscale) {
   //Note we do not check for zero length here because sometime these vectors are zero on purpose
 
-  TList *aTListlv1;
+  TList* aTListlv1 = new TList();
+  //TList * li = new TList();
   //TList *aTListlv1ptr = &aTListlv1;
-  TList *aTListlv2;
+  TList *aTListlv2 = new TList();
+  TList aTListlv2aa;
+  aTListlv2 = &aTListlv2aa;
   TH1D aHist;
-  TH1D* aHistptr = &aHist;
+  TH1D* aHistptr;
+  aHistptr = &aHist;
   int count = 0;
   int counta = 0;
   
   cout << "count "<< count << endl;
   cout << tempVectorlv2.size() << endl;
-  while (count != tempVectorlv2.size()) {
+  //while (count != tempVectorlv2.size()) {
+  while (count != 1) {
     cout << "count "<< count << endl;
-    while (counta != tempVectorlv2[0].size()) {
-      *aHistptr = Vector2TH1D(tempVectorlv2[count][counta], aHistoName, xscale);
+    //while (counta != tempVectorlv2[0].size()) {
+    while (counta != 1) {
+      aHist = Vector2TH1D(tempVectorlv2[count][counta], aHistoName, xscale);
+      cout << aHistptr->GetName() << endl;
+      cout << aHistptr->GetBinContent(11) << endl;
+      //aHistptr->Draw();
+      //aHist.Draw();
       aTListlv1->Add(aHistptr);
       counta++;
       cout << "counta "<< counta << endl;
@@ -96,13 +107,19 @@ TList* NestedVector2TList(const vector<vector<vector<double>>>& tempVectorlv2,
     count++;
   }
   
+  //return aTListlv2;
+  //aHistptr = &aHist;
+  //cout << aHistptr->GetName() << endl;
+  //cout << aHistptr->GetBinContent(11) << endl;
+  cout << "change to pointer" << endl;
   return aTListlv2;
+  //return aTListlv2aa;
 
 }
 
 void read() {
 
-  gDebug=3;
+  //gDebug=3;
 
  
   TFile * file = new TFile("testTlist.root", "READ");
@@ -123,9 +140,8 @@ void read() {
   vector<vector<vector<double>>> vec = TList2NestedVector(lis);
 
   cout << vec.size() << " " << vec[0].size() << " " << vec[0][0].size() << endl;
-  for (int xx=0; xx<vec[0][0].size(); xx++) {
-  //for (int xx=0; xx<vec.size(); xx++) {
-    cout<< xx << "  " << vec[1][0][xx] <<"  " << vec[1][1][xx] << "  " << vec[1][2][xx] << endl; }
+//  for (int xx=0; xx<vec[0][0].size(); xx++) {
+//    cout<< xx << "  " << vec[1][0][xx] <<"  " << vec[1][1][xx] << "  " << vec[1][2][xx] << endl; }
 
   //testing to write Vector to TH1D
 /*  TH1D histoutput = Vector2TH1D(vec[1][0], "hist", 0.1);
@@ -137,6 +153,14 @@ void read() {
 */
   //testing NestedVector2TList
   TList* aa = NestedVector2TList(vec, "hist", 0.1);
+  //TH1D * histoutput = NestedVector2TList(vec, "hist", 0.1);
+  //histoutput.Draw();
+  TFile * savefile = new TFile("saveFile.root", "RECREATE");
+  //if (histoutput) histoutput->Draw();
+  cout << "Can I get here?" << endl;
+  //aa->Print();
+  //histoutput->Draw();
+  savefile->Close();
 
 }
 
