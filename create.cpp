@@ -1,4 +1,9 @@
-int test () {
+int create() {
+
+
+  TFile * extract = new TFile("extract.root", "READ");
+  TH1D* template_T5Z2 = (TH1D*) extract->Get("PT");
+  template_T5Z2->Draw();
 
   TList * li = new TList();
   TList * lis = new TList();
@@ -7,26 +12,17 @@ int test () {
   TList * nlis1 = new TList();
   TList * nlis2 = new TList();
   TFile * file = new TFile("testTlist.root", "RECREATE");
-  TH1D * hist = new TH1D("hist", "hist", 100, 0, 10);
-  TH1D * histptr = &hist;
-  TH1D * hist1 = new TH1D("hist1", "hist1", 100, 0, 10);
-  TH1D * hist2 = new TH1D("hist2", "hist2", 100, 0, 10);
-  TH1D * hist3 = new TH1D("hist3", "hist3", 100, 0, 10);
-  for (int ndata=0; ndata<1000; ndata++) { 
-    hist->Fill(1.);}
-  for (int ndata=0; ndata<1000; ndata++) {hist1->Fill(2.);}
-  for (int ndata=0; ndata<1000; ndata++) {hist2->Fill(3.);}
-  for (int ndata=0; ndata<1000; ndata++) {hist3->Fill(4.);}
-  //hist1->FillRandom("gaus", 1000);
-  //hist2->FillRandom("gaus", 1000);
-  //hist3->FillRandom("gaus", 1000);
-  nlis1->Add(histptr);
-  nlis1->Add(hist1);
-  nlis1->Add(hist2);
+  TH1D * hist = (TH1D*)template_T5Z2->Clone();
+  //TH1D * hist1 = new TH1D("hist1", "hist1", 100, 0, 10);
+  //TH1D * hist2 = new TH1D("hist2", "hist2", 100, 0, 10);
+  //TH1D * hist3 = new TH1D("hist3", "hist3", 100, 0, 10);
+  nlis1->Add(hist);
+  nlis1->Add(hist);
+  nlis1->Add(hist);
 
-  nlis2->Add(hist3);
-  nlis2->Add(hist2);
-  nlis2->Add(hist1);
+  nlis2->Add(hist);
+  nlis2->Add(hist);
+  nlis2->Add(hist);
 
   lis->Add(nlis1);
   lis->Add(nlis2);
