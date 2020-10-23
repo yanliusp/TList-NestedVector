@@ -1,5 +1,5 @@
 // copied and modified from BatCommons/pulse/PulseTools.h/cxx
-vector<double> TH1D2Vector(TH1D* aHisto)
+vector<double> TH1D2Vector(const TH1D* aHisto)
 {
 
   // number of bins (histrogram x axis)
@@ -17,6 +17,7 @@ vector<double> TH1D2Vector(TH1D* aHisto)
 
 }
 
+// copied and modified from BatCommons/pulse/PulseTools.h/cxx
 TH1D* Vector2TH1D(const vector<double>& aVector, const string& aHistoName,
                              const double xscale)
 {
@@ -41,115 +42,69 @@ TH1D* Vector2TH1D(const vector<double>& aVector, const string& aHistoName,
 
 
 // Oct. 16: write TList2NestedVector, validated. looks good
+// makes a nestedvector from a Tlist
 vector<vector<vector<double>>> TList2NestedVector(const TList* aTList)
 {
 
-  TH1D* hist1;
+  TH1D* aHist;
   vector<vector<double>> tempVectorlv1;
   vector<vector<vector<double>>> tempVectorlv2;
+  int counta = 0, countb = 0;
 
-  int count = 0;
-  int counta = 0;
-
-  while (aTList->At(count)) {
-    TList* midli = (TList*) aTList->At(count);
-    counta = 0; // refresh counter
-    tempVectorlv1.clear(); // refresh tempVector holder
-    while (midli->At(counta)) {
-      hist1 = (TH1D*) midli->At(counta);
-      //hist1->Draw();
-      tempVectorlv1.push_back(TH1D2Vector(hist1));
-      counta++;
+  while (aTList->At(counta)) {
+    TList* tempTList = (TList*) aTList->At(counta);
+    while (tempTList->At(countb)) {
+      aHist = (TH1D*) tempTList->At(countb);
+      tempVectorlv1.push_back(TH1D2Vector(aHist));
+      countb++;
     }
     tempVectorlv2.push_back(tempVectorlv1);
-    count++;
+    countb = 0; // refresh counter
+    tempVectorlv1.clear(); // refresh tempVector holder
+    counta++;
   }
 
   return tempVectorlv2;
 }
 
 //Oct 17: 
-TList* NestedVector2TList(const vector<vector<vector<double>>>& tempVectorlv2, const string& aHistoName, const double xscale) {
+TList* NestedVector2TList(const vector<vector<vector<double>>>& tempVectorlv2, const string& aHistoName,
+                          const double xscale) {
   //Note we do not check for zero length here because sometime these vectors are zero on purpose
 
-  TList* aTListlv1[tempVectorlv2.size()]; // = new TList();
-  //TList * li = new TList();
-  //TList *aTListlv1ptr = &aTListlv1;
-  TList *aTListlv2 = new TList();
-  //TList aTListlv2aa;
-  //aTListlv2 = &aTListlv2aa;
-  //TH1D aHist;
-  TH1D* aHistptr;
-  //aHistptr = &aHist;
-  int count = 0;
+  TList* tempTList[tempVectorlv2.size()];
+  TList *aTList = new TList();
+  TH1D* aHist;
   int counta = 0;
+  int countb = 0;
   string histname;
   
-  cout << "count "<< count << endl;
-  cout << "tempVectorlv2.size() " << tempVectorlv2.size() << endl;
-  while (count != tempVectorlv2.size()) {
-  //while (count != 1) {
-    cout << "count "<< count << endl;
-    aTListlv1[count] = new TList();
-    while (counta != tempVectorlv2[0].size()) {
-    //while (counta != 1) {
-      histname = aHistoName + to_string(count) + to_string(counta);
-      aHistptr = Vector2TH1D(tempVectorlv2[count][counta], histname, xscale);
-      cout << aHistptr->GetName() << endl;
-      cout << aHistptr->GetBinContent(11) << endl;
-      aHistptr->Draw();
-      //sleep(10);
-      //aHistptr->Draw();
-      //aHist.Draw();
-      aTListlv1[count]->Add(aHistptr);
-      counta++;
-      cout << "counta "<< counta << endl;
+  while (counta != tempVectorlv2.size()) {
+    tempTList[counta] = new TList();
+    while (countb != tempVectorlv2[0].size()) {
+      histname = aHistoName + to_string(counta) + "_" + to_string(countb); // construct hist name
+      aHist = Vector2TH1D(tempVectorlv2[counta][countb], histname, xscale);
+      tempTList[counta]->Add(aHist); // add hist to lv1 TList
+      countb++;
     }
-    aTListlv2->Add(aTListlv1[count]);
-    aTListlv1[count]->Print();
-    //aTListlv1->Clear();
-    //aTListlv1->Print();
-    counta = 0;
-    count++;
+    aTList->Add(tempTList[counta]);
+    countb = 0;
+    counta++;
   }
   
-  //return aTListlv2;
-  //aHistptr = &aHist;
-  //cout << aHistptr->GetName() << endl;
-  //cout << aHistptr->GetBinContent(11) << endl;
-  cout << "change to pointer" << endl;
-  return aTListlv2;
-  //return aTListlv2aa;
-
+  return aTList;
 }
 
 void read() {
 
-  //gDebug=3;
-
- 
   TFile * file = new TFile("testTlist.root", "READ");
   TList * lis = (TList*)file->Get("lis");
-  TList * nlis1 = (TList*)file->Get("nlis1");
 
-  TH1D* hist = (TH1D*) nlis1->At(1); 
-  //hist->Draw();
-  
-  //TList* nli = (TList*) lis->At(0);
-  //TH1D* hist1 = (TH1D*) nli->Last();
-  //hist1->Draw();
-  //TH1D* hist2 = (TH1D*) nli->First();
-  //hist2->Draw("same");
-
-  //TH1D* hist1 = TList2NestedVector(lis);
-  //vector<double> vec = TH1D2Vector(hist1);
   vector<vector<vector<double>>> vec = TList2NestedVector(lis);
 
-  cout << vec.size() << " " << vec[0].size() << " " << vec[0][0].size() << endl;
-//  for (int xx=0; xx<vec[0][0].size(); xx++) {
-//    cout<< xx << "  " << vec[1][0][xx] <<"  " << vec[1][1][xx] << "  " << vec[1][2][xx] << endl; }
+  //cout << vec.size() << " " << vec[0].size() << " " << vec[0][0].size() << endl;
 
-  //testing to write Vector to TH1D
+  // testing to write Vector to TH1D
 /*  TH1D histoutput = Vector2TH1D(vec[1][0], "hist", 0.1);
   cout << "data" << histoutput.GetBinContent(41) << endl;
   TFile * savefile = new TFile("saveFile.root", "NEW");
@@ -157,24 +112,33 @@ void read() {
   histoutput.Draw();
   savefile->Close();
 */
-  //testing NestedVector2TList
+
+  // NestedVector2TList
   TList* aa = NestedVector2TList(vec, "hist", 0.1);
 
-  vector<vector<vector<double>>> vec_back = TList2NestedVector(aa);
-  for (int xxxx=0; xxxx<vec.size(); xxxx++) {
-  for (int xxx=0; xxx<vec[0].size(); xxx++) {
-  for (int xx=0; xx<vec[0][0].size(); xx++) {
-    cout<< xx << "  " << vec[1][0][xx] <<"  " << vec_back[1][0][xx] << "  "  << endl; }}}
+  // comparing two vectors
+  //vector<vector<vector<double>>> vec_back = TList2NestedVector(aa);
+  //vec == vec_back ? cout << "y" << endl : cout << "n" << endl;
 
-  //TH1D * histoutput = NestedVector2TList(vec, "hist", 0.1);
-  //histoutput.Draw();
-  TFile * savefile = new TFile("saveFile.root", "RECREATE");
-  //if (histoutput) histoutput->Draw();
-  cout << "Can I get here?" << endl;
-  aa->Print();
+  // validation 
+/*  for (int xxxx=0; xxxx<vec.size(); xxxx++) {
+    for (int xxx=0; xxx<vec[0].size(); xxx++) {
+      for (int xx=0; xx<vec[0][0].size(); xx++) {
+        cout<< xx << "  " << vec[1][0][xx] <<"  " << vec_back[1][0][xx] << "  "  << endl; }}}
+*/
+
+  // method to extract TH1D from TList
+/*  TList* bb = (TList*) aa->At(0);
+  TH1D* hh = (TH1D*) bb->At(0);
+  hh->Draw();
+*/
+
+  // method to write TList to file
+/*  TFile * savefile = new TFile("saveFile.root", "RECREATE");
+  //aa->Print();
   aa->Write("aa", 1);
-  //histoutput->Draw();
+  // hh->Write();
   savefile->Close();
+*/
 
 }
-
